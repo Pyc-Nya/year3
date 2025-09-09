@@ -8,5 +8,10 @@
     "name": "lol",
     "password": "aaa",
     "color": "#000000"
+  },
+  "admin": {
+    "name": "admin",
+    "password": "admin",
+    "color": "#000000"
   }
 }

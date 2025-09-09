@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import fs from 'fs';   
 import fsAsync from 'fs/promises';
+import cors from "cors"
 
 const users_FILE = path.join(process.cwd(), 'users.json');
 type Tusers = {[key: string]: {name: string, password: string, color: string}}
@@ -59,6 +60,10 @@ const app = express();
 app.use(express.static(path.join(process.cwd(), 'public')));
 app.use(cookieParser());
 app.use(express.json());
+app.use(cors({
+  origin: 'https://localhost:8001',  // nginx сервер
+  credentials: true  // для передачи кук
+}));
 app.use(checkAuthMiddleware);
 const port = 8000;
 
@@ -95,10 +100,20 @@ app.post("/api/auth", (req, res) => {
         password: password,
         color: "#000000"
       };
+      console.log("сохраняю нового пользователя")
       saveUsers(users);
     }
-    res.cookie("username", name);
-    res.cookie("color", users[name].color);
+    console.log("сохраняю куки ", name, users[name].color);
+
+    const cookieProps = {
+      httpOnly: false,
+      domain: "localhost:8001",
+      path: "/"
+    }
+    
+    res.cookie("username", name, cookieProps);
+    res.cookie("color", users[name].color, cookieProps);
+
     console.log("перенаправление на /profile");
     return res.redirect("/profile");
   }
