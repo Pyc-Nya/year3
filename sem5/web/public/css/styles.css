@@ -193,6 +193,12 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.875em;
 }
 
+.exit {
+  margin-bottom: 0.625em;
+  width: 6.25em;
+  cursor: pointer;
+}
+
 .send-button {
   padding: 0.625em;
   border-radius: 0.3125em;

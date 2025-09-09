@@ -1,7 +1,9 @@
 import { listenLangChange } from './changeLange.js';
+import { listenExitClick } from './listenExitClick.js';
 import { makeFetch } from './myfetch.js';
 document.addEventListener('DOMContentLoaded', () => {
     listenLangChange();
+    listenExitClick();
     const userName = document.getElementById("username");
     const sendButton = document.querySelector('.send-button');
     const colorInput = document.getElementById("color");
