@@ -206,6 +206,10 @@ h1, h2, h3, h4, h5, h6 {
       -ms-user-select: none;
           user-select: none;
 }
+.send-button:active {
+  -webkit-box-shadow: 0 0 0.25em #ccc;
+          box-shadow: 0 0 0.25em #ccc;
+}
 
 .invalid {
   -webkit-box-shadow: 0 0 0 1px red;
