@@ -107,7 +107,7 @@ app.post("/api/auth", (req, res) => {
 
     const cookieProps = {
       httpOnly: false,
-      domain: "localhost:8001",
+      domain: "localhost",
       path: "/"
     }
     
