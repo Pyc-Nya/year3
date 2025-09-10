@@ -118,6 +118,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 300;
 }
 .container {
+  position: relative;
   font-family: "Montserrat", sans-serif;
   font-weight: 400;
   font-size: 20px;
@@ -225,6 +226,63 @@ h1, h2, h3, h4, h5, h6 {
 .inactive {
   pointer-events: none;
   opacity: 0.5;
+}
+
+.users-list__item {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 0.3125em;
+  background: #fff;
+  gap: 0.3125em;
+  border-radius: 0.3125em;
+  margin-bottom: 0.3125em;
+}
+.users-list__item:last-child {
+  margin-bottom: 0;
+}
+.users-list__refresh {
+  width: 1.25em;
+  height: 1.25em;
+  margin-bottom: 0.3125em;
+}
+.users-list__title {
+  margin-bottom: 0.3125em;
+}
+.users-list__color {
+  width: 0.625em;
+  height: 0.625em;
+  border-radius: 50%;
+}
+.users-list__close {
+  margin-left: auto;
+}
+
+.modal {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background: rgba(6, 6, 6, 0.3450980392);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
 @media screen and (max-width: 600px) {
