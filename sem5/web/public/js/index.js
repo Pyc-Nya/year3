@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: "POST",
                 body: JSON.stringify({
                     color: colorInput.value,
+                    id: cookies["id"]
                 })
             }, () => { }, () => { });
         }

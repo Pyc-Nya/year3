@@ -133,6 +133,7 @@ app.post("/api/auth", (req, res) => {
     }
     
     res.cookie("username", name, cookieProps);
+    res.cookie("id", findedUser.id, cookieProps);
     res.cookie("color", users[findedUser.id].color, cookieProps);
 
     console.log("перенаправление на /profile");
@@ -143,14 +144,14 @@ app.post("/api/auth", (req, res) => {
 app.post("/api/color", (req, res) => {
   console.log("/api/color", req.body);
   const body = req.body;
-  const username = req.cookies.username; 
+  const id = body.id; 
   const color = body.color;
-  console.log(username, color);
-  if (!username || users[username] === undefined) {
+  console.log(id, color);
+  if (!id || users[id] === undefined) {
     console.log("неавторизованный пользователь, перенаправление на /auth");
     return res.redirect("/auth");
   } else {
-    users[username].color = color;
+    users[id].color = color;
     res.cookie("color", color);
     console.log("успешно изменен цвет пользователя");
     res.status(200).send("успешно изменен цвет пользователя");
