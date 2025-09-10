@@ -78,11 +78,11 @@ const refresh = () => {
   makeFetch(
     "/users",
     {},
-    (data: {[key: string]: {name: string, color: string, id: string}}) => {
+    (data: {name: string, color: string, id: string}[]) => {
       const usersList = document.querySelector(".users-list__list");
       if (!usersList) return;
       usersList.innerHTML = "";
-      Object.values(data).forEach(({name, color, id}) => {
+      data.forEach(({name, color, id}) => {
         const item = createUsersListItem(name, color, id);
         usersList.appendChild(item);
       });

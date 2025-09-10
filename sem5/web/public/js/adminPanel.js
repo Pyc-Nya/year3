@@ -58,7 +58,7 @@ const refresh = () => {
         if (!usersList)
             return;
         usersList.innerHTML = "";
-        Object.values(data).forEach(({ name, color, id }) => {
+        data.forEach(({ name, color, id }) => {
             const item = createUsersListItem(name, color, id);
             usersList.appendChild(item);
         });
