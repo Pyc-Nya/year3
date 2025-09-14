@@ -68,7 +68,6 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(cors({
   origin: 'https://localhost:12345',  // nginx сервер
-  credentials: true  // для передачи кук
 }));
 app.use(checkAuthMiddleware);
 const port = 8000;
@@ -149,9 +148,10 @@ app.post("/api/color", (req, res) => {
   console.log(id, color);
   if (!id || users[id] === undefined) {
     console.log("неавторизованный пользователь, перенаправление на /auth");
-    return res.redirect("/auth");
+    return res.status(401).send("Не найден пользователь с указанным id");
   } else {
     users[id].color = color;
+    saveUsers(users);
     res.cookie("color", color);
     console.log("успешно изменен цвет пользователя");
     res.status(200).send("успешно изменен цвет пользователя");
