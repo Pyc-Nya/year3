@@ -1,0 +1,47 @@
+https://nginx.org/en/download.html // распаковать в C:\, добавить в path
+https://slproweb.com/products/Win32OpenSSL.html // установить, добавить bin в path
+
+// pwsh command (в директории C:\nginx):
+openssl version
+mkdir cert
+cd cert
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem -subj "/CN=localhost"
+cd ../
+nginx -t
+nginx
+
+// в другом терминале
+nginx -s stop
+
+
+
+
+
+
+
+// это нужно вставить в C:\nginx\conf\nginx.conf перед запуском
+
+events {}
+
+http {
+    server {
+        listen 12345 ssl; // указываем, что нужно использовать хттпс, порт 12345
+        server_name localhost;
+
+        ssl_certificate C:/nginx/cert/cert.pem; ключи, которые сгенерирует опенссл
+        ssl_certificate_key C:/nginx/cert/key.pem;
+
+        ssl_protocols TLSv1.2 TLSv1.3; // протоколы, указание, какие протоколы использовать нельзя (md5, например)
+        ssl_ciphers HIGH:!aNULL:!MD5;
+
+        location / {
+            proxy_pass http://127.0.0.1:8000; // прокси к локал хост 8000
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+}
+
