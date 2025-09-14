@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import fs from 'fs';   
 import fsAsync from 'fs/promises';
-// import cors from "cors"
+import cors from "cors"
 import { v4 as uuidv4 } from 'uuid';
 
 const users_FILE = path.join(process.cwd(), 'users.json');
@@ -66,10 +66,10 @@ const app = express();
 app.use(express.static(path.join(process.cwd(), 'public')));
 app.use(cookieParser());
 app.use(express.json());
-// app.use(cors({
-//   origin: 'https://localhost:8001',  // nginx сервер
-//   credentials: true  // для передачи кук
-// }));
+app.use(cors({
+  origin: 'https://localhost:12345',  // nginx сервер
+  credentials: true  // для передачи кук
+}));
 app.use(checkAuthMiddleware);
 const port = 8000;
 
