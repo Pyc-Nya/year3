@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin-panel</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="icon" href="./assets/whatsapp.png" type="image/png">
+</head>
+<body>
+    <div class="container">
+        <div class="center">
+            <div class="lang-select flex-col">
+                <label class="main-info__label" for="lang">Choose language</label>
+                <select name="lang" id="lang" class="main-info__input lang-select__select">
+                    <option value="ru">Русский</option>
+                    <option value="eng">English</option>
+                </select>
+            </div>
+            <div class="main-info flex-col users-list">
+				<button class="users-list__refresh">↻</button>
+                <div class="users-list__title">
+                    Users list
+                </div>
+                <div class="users-list__list">
+                    
+                </div>
+            </div>
+        </div>
+		<div style="display: none" class="modal">
+            <div id="modal-content" class="main-info flex-col">
+                <div class="main-info__label">User name:</div>
+                <div id="username" class="main-info__label"></div>
+                <div class="main-info__color-wrapper">
+                    <div class="main-info__label">User color:</div>
+                    <input id="color" class="main-info__color" type="color">
+                </div>
+            </div>
+		</div>
+    </div>
+    <script type="module" src="../../js/adminPanel.js"></script>
+</body>
+</html>

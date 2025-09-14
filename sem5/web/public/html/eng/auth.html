@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="icon" href="./assets/whatsapp.png" type="image/png">
+</head>
+<body>
+    <div class="container">
+        <div class="center">
+            <div class="lang-select flex-col">
+                <label class="main-info__label" for="lang">Choose language</label>
+                <select name="lang" id="lang" class="main-info__input lang-select__select">
+                    <option value="ru">Русский</option>
+                    <option value="eng">English</option>
+                </select>
+            </div>
+            <div class="main-info flex-col">
+                <label class="main-info__label" for="username">User name</label>
+                <input class="main-info__input" type="text" id="username" name="username" required>
+                <label class="main-info__label" for="password">Password</label>
+                <input class="main-info__input" type="password" id="password" name="password" required>
+                <button class="send-button inactive">Authorize</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="../../js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная страница</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="icon" href="./assets/whatsapp.png" type="image/png">
+</head>
+<body>
+    <div class="container">
+        <div class="center">
+            <button id="exit" class="flex-col exit">
+                Выйти
+            </button>
+            <div class="lang-select flex-col">
+                <label class="main-info__label" for="lang">Выберите язык</label>
+                <select name="lang" id="lang" class="main-info__input lang-select__select">
+                    <option value="ru">Русский</option>
+                    <option value="eng">English</option>
+                </select>
+            </div>
+            <div class="main-info flex-col">
+                <div class="main-info__label">Имя пользователя:</div>
+                <div id="username" class="main-info__label"></div>
+                <div class="main-info__color-wrapper">
+                    <div class="main-info__label">Ваш любимый цвет:</div>
+                    <input id="color" class="main-info__color" type="color">
+                </div>
+                <button class="send-button">Отправить на сервер</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="../../js/index.js"></script>
+</body>
+</html>
