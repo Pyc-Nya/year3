@@ -1,4 +1,6 @@
 /venv
 /poke*
-/dataset
-dataset.rar
+/*dataset
+*dataset.rar
+/validation*
+*.keras
