@@ -1,0 +1,366 @@
+# Вариант 4 из 1 лабораторной
+import heapq
+import time
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Set, Tuple
+
+
+
+
+INITIAL_STATE = (
+    (6, 0, 8),
+    (5, 2, 1),
+    (4, 3, 7),
+)
+
+
+GOAL_STATE = (
+    (1, 2, 3),
+    (8, 0, 4),
+    (7, 6, 5),
+)
+
+
+MOVES = {
+    "Left": (0, -1),
+    "Right": (0, 1),
+    "Up": (-1, 0),
+    "Down": (1, 0),
+}
+
+
+# Класс PriorityNode для очереди с приоритетом.
+@dataclass(order=True)
+class PriorityNode:
+    priority: int # приоритет
+    counter: int # счетчик
+    node: object = field(compare=False) # узел
+
+
+# Класс Node для узла дерева поиска
+@dataclass
+class Node:
+    state: Tuple[Tuple[int, ...], ...] # состояние доски
+    parent: Optional["Node"] = None # ссылка на родителя
+    action: Optional[str] = None # действие, которым пришли в это состояние
+    path_cost: int = 0  # g(n)
+    depth: int = 0 # глубина в дереве
+    h: int = 0  # h(n)
+    f: int = 0  # f(n) = g(n) + h(n)
+    # Хеширование состояния для хранения в множестве visited
+    def __hash__(self):
+        return hash(self.state)
+
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        return self.state == other.state
+
+
+
+
+class SearchStats:
+    def __init__(self):
+        self.steps = 0
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
+        self.max_frontier_size = 0
+        self.duplicates_found = 0
+
+
+ # Преобразование состояния доски в кортеж для хранения в множестве visited
+def state_to_tuple(state) -> tuple:
+    return tuple(tuple(row) for row in state)
+
+
+ # Поиск позиции нуля на доске
+def find_blank(state) -> Tuple[int, int]:
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] == 0:
+                return i, j
+    return -1, -1
+
+
+ # Проверка, является ли ход допустимым
+def is_valid_move(row: int, col: int) -> bool:
+    return 0 <= row < 3 and 0 <= col < 3
+
+
+ # Применение хода и возвращение нового состояния
+def apply_move(
+    state, blank_row: int, blank_col: int, move: str
+) -> Optional[tuple]:
+    dr, dc = MOVES[move] # смещение для перемещения нуля
+    new_row, new_col = blank_row + dr, blank_col + dc # новые координаты нуля
+    if not is_valid_move(new_row, new_col): # проверка, является ли ход допустимым
+        return None
+
+
+    state_list = [list(row) for row in state]
+    state_list[blank_row][blank_col], state_list[new_row][new_col] = ( # обмен местами нуля и фишки
+        state_list[new_row][new_col],
+        state_list[blank_row][blank_col],
+    ) # возвращение нового состояния
+    return tuple(tuple(row) for row in state_list)
+
+
+ # Генерация списка потомков для текущего состояния
+def get_successors(state) -> List[Tuple[str, tuple]]:
+    r, c = find_blank(state) # поиск позиции нуля
+    out = [] # список потомков
+    for action in MOVES: # для каждого возможного хода
+        new_state = apply_move(state, r, c, action) # применение хода
+        if new_state is not None: # если ход возможен
+            out.append((action, new_state)) # добавление в список потомков
+    return out
+
+
+# Проверка, является ли текущее состояние целевым
+
+
+def is_goal(state) -> bool:
+    return state == GOAL_STATE
+
+
+# Вывод состояния доски в виде матрицы
+def print_state(state):
+    for row in state:
+        print(" ".join(str(x) if x != 0 else " " for x in row))
+    print()
+
+
+# Восстановление пути от цели к старту через parent
+def path_to_root(node: Node) -> List[Node]:
+    path = []
+    while node:
+        path.append(node)
+        node = node.parent
+    return list(reversed(path))
+
+
+# Вывод решения и статистики
+def print_solution(
+    node: Node, stats: SearchStats, elapsed: float, heuristic_name: str
+):
+    path = path_to_root(node)
+    print(">>> ЦЕЛЕВОЕ СОСТОЯНИЕ ДОСТИГНУТО! <<<")
+    print(f"\nРешение найдено за {len(path) - 1} ходов:")
+
+
+    for i, n in enumerate(path):
+        if n.action:
+            print(f"Ход {i}: {n.action}")
+        print(f"g={n.path_cost}, h={n.h}, f={n.f}")
+        print_state(n.state)
+
+
+    print(f"\n--- Экспериментальная оценка сложности (A*, {heuristic_name}) ---")
+    print(f"Время выполнения: {elapsed:.6f} сек")
+    print(f"Количество итераций: {stats.steps}")
+    print(f"Количество раскрытых узлов: {stats.nodes_expanded}")
+    print(f"Количество сгенерированных узлов: {stats.nodes_generated}")
+    print(f"Ёмкостная сложность (макс. размер каймы): {stats.max_frontier_size}")
+    print(f"Количество повторов: {stats.duplicates_found}")
+
+
+# Построение словаря для хранения целевых позиций фишек
+def build_goal_positions(goal_state) -> Dict[int, Tuple[int, int]]:
+    pos = {}
+    for i in range(3):
+        for j in range(3):
+            pos[goal_state[i][j]] = (i, j)
+    return pos
+
+
+# Словарь для хранения целевых позиций фишек
+GOAL_POSITIONS = build_goal_positions(GOAL_STATE)
+
+
+# Эвристика h1: число фишек не на своем месте
+# h1: число фишек не на своем месте
+def heuristic_h1(state) -> int:
+    count = 0
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] != 0 and state[i][j] != GOAL_STATE[i][j]:
+                count += 1
+    return count
+
+
+# Эвристика h2: сумма манхэттенских расстояний
+# h2: сумма манхэттенских расстояний
+def heuristic_h2(state) -> int:
+    distance = 0 # сумма манхэттенских расстояний
+    # для каждой фишки считается |dx|+|dy| до целевой позиции и суммируется
+    for i in range(3):
+        for j in range(3):
+            value = state[i][j]
+            if value != 0:
+                goal_i, goal_j = GOAL_POSITIONS[value]
+                distance += abs(i - goal_i) + abs(j - goal_j)
+    return distance
+
+
+# A* поиск с эвристикой
+def a_star_search(
+    heuristic_func, heuristic_name: str, step_mode: bool = True
+):
+    stats = SearchStats()
+    counter = 0
+
+
+    h0 = heuristic_func(INITIAL_STATE)
+    start_node = Node(
+        state=INITIAL_STATE,
+        parent=None,
+        action=None,
+        path_cost=0,
+        depth=0,
+        h=h0,
+        f=h0,
+    )
+    # Очередь с приоритетом для хранения узлов
+    frontier = []
+    # Добавление начального узла в очередь
+    heapq.heappush(frontier, PriorityNode(start_node.f, counter, start_node))
+    counter += 1
+    # Словарь для хранения минимальных путей от старта до каждого состояния
+    best_g = {state_to_tuple(INITIAL_STATE): 0}
+    # Множество для хранения раскрытых состояний
+    visited_expanded: Set[tuple] = set()
+    # Установка количества сгенерированных узлов
+    stats.nodes_generated = 1
+
+
+    print("=" * 60)
+    print(f"A* ПОИСК С ЭВРИСТИКОЙ {heuristic_name}")
+    print("=" * 60)
+    print("Начальное состояние:")
+    print_state(INITIAL_STATE)
+    print(f"h(start) = {h0}\n")
+
+
+    t0 = time.perf_counter()
+    # Пока очередь не пуста
+    while frontier:
+        # Увеличение количества шагов
+        stats.steps += 1
+        # Обновление максимального размера очереди
+        stats.max_frontier_size = max(stats.max_frontier_size, len(frontier))
+        # Извлечение узла с минимальным f из очереди
+        # и присваивание его текущему узлу
+        current = heapq.heappop(frontier).node
+        current_state_t = state_to_tuple(current.state)
+        # Проверка, было ли это состояние уже раскрыто
+        if current_state_t in visited_expanded:
+            continue
+        visited_expanded.add(current_state_t)
+        stats.nodes_expanded += 1
+
+
+        if step_mode:
+            print(f"--- Шаг {stats.steps} ---")
+            print(
+                f"Раскрываемая вершина: depth={current.depth}, "
+                f"g={current.path_cost}, h={current.h}, f={current.f}"
+            )
+            print_state(current.state)
+        # Проверка, является ли текущее состояние целевым
+        if is_goal(current.state):
+            elapsed = time.perf_counter() - t0
+            print_solution(current, stats, elapsed, heuristic_name)
+            return current, stats
+        # Получение списка потомков для текущего состояния
+        successors = get_successors(current.state)
+        if step_mode:
+            print("Потомки:")
+        # Для каждого потомка
+        for action, new_state in successors:
+            new_state_t = state_to_tuple(new_state)
+            new_g = current.path_cost + 1
+            # Проверка, нет ли уже более короткого пути к этому состоянию
+            if new_state_t in best_g and new_g >= best_g[new_state_t]:
+                stats.duplicates_found += 1
+                if step_mode:
+                    print(f" {action}: повтор/хуже существующего пути -> пропуск")
+                continue
+            # Вычисление эвристики для нового состояния
+            h = heuristic_func(new_state)
+            # Вычисление f(n) = g(n) + h(n)
+            f = new_g + h
+            # Создание нового узла
+            child = Node(
+                state=new_state,
+                parent=current,
+                action=action,
+                path_cost=new_g,
+                depth=current.depth + 1,
+                h=h,
+                f=f,
+            )
+            # Обновление минимального пути от старта до этого состояния
+            best_g[new_state_t] = new_g
+            # Добавление нового узла в очередь
+            heapq.heappush(frontier, PriorityNode(f, counter, child))
+            counter += 1
+            # Увеличение количества сгенерированных узлов
+            stats.nodes_generated += 1
+
+
+            if step_mode:
+                print(f" {action}: g={new_g}, h={h}, f={f}")
+                print_state(new_state)
+
+
+        if step_mode:
+            print(f"Текущий размер каймы: {len(frontier)}")
+            input("Нажмите Enter для следующего шага...")
+
+
+    elapsed = time.perf_counter() - t0
+    print("Решение не найдено.")
+    print(f"\n--- Экспериментальная оценка сложности (A*, {heuristic_name}) ---")
+    print(f"Время выполнения: {elapsed:.6f} сек")
+    print(f"Количество итераций: {stats.steps}")
+    print(f"Количество раскрытых узлов: {stats.nodes_expanded}")
+    print(f"Количество сгенерированных узлов: {stats.nodes_generated}")
+    print(f"Ёмкостная сложность (макс. размер каймы): {stats.max_frontier_size}")
+    print(f"Количество повторов: {stats.duplicates_found}")
+    return None, stats
+
+
+
+
+def main():
+    print("Выберите режим:")
+    print("1 - Пошаговый")
+    print("2 - Автоматический")
+    mode = input("Ваш выбор (1/2): ").strip() or "1"
+    step_mode = mode == "1"
+
+
+    print("\nВыберите эвристику:")
+    print("1 - h1: число фишек не на своем месте")
+    print("2 - h2: сумма манхэттенских расстояний")
+    choice = input("Ваш выбор (1/2): ").strip()
+
+
+    if choice == "1":
+        a_star_search(
+            heuristic_h1,
+            "h1 (число неверно стоящих фишек)",
+            step_mode,
+        )
+    elif choice == "2":
+        a_star_search(
+            heuristic_h2,
+            "h2 (манхэттенское расстояние)",
+            step_mode,
+        )
+    else:
+        print("Неверный выбор")
+
+if __name__ == "__main__":
+    main()
